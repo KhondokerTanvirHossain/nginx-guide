@@ -67,7 +67,7 @@ sudo apt update
 1. Add configuration file:
 
     ```bash
-    sudo vim /etc/nginx/conf.d/default.conf
+    sudo vim /etc/nginx/conf.d/example.conf
     ```
 
 2. Add server configuration:
@@ -127,7 +127,65 @@ sudo apt update
     sudo certbot renew --dry-run
     ```
 
-6. Start Nginx:
+6. Stop everything running on 80 81 and 443 port (optional)
+
+    ```bash
+    sudo kill -9 $(sudo lsof -t -i:80 -t -i:81 -t -i:443)
+    ```
+
+7. Start Nginx:
+
+    ```bash
+    sudo systemctl start nginx
+    ```
+
+## Remove Let's Encrypt Certificates from NGINX
+
+To remove all Let's Encrypt certificates from NGINX, follow these steps:
+
+1. **Stop Nginx:** First, stop the NGINX service to ensure no processes are using the certificates.
+
+    ```bash
+    sudo systemctl stop nginx
+    ```
+
+2. **Remove Let's Encrypt Certificates:** Delete the Let's Encrypt certificates and related files. These are typically stored in /etc/letsencrypt/live/, /etc/letsencrypt/archive/, and /etc/letsencrypt/renewal/.
+
+    ```bash
+    sudo rm -rf /etc/letsencrypt/live/*
+    sudo rm -rf /etc/letsencrypt/archive/*
+    sudo rm -rf /etc/letsencrypt/renewal/*
+    ```
+
+    If you know the domain name then manually delete the existing certificate files for sso.themaxlive.com from the Let's Encrypt directories.
+
+    ```bash
+    sudo rm -rf /etc/letsencrypt/live/example.domain.com
+    sudo rm -rf /etc/letsencrypt/archive/example.domain.com
+    sudo rm -rf /etc/letsencrypt/renewal/example.domain.com.conf
+    ```
+
+3. **Remove Let's Encrypt Configuration from NGINX:** Open your NGINX configuration files and remove any lines related to Let's Encrypt. These lines typically include ssl_certificate, ssl_certificate_key, and include /etc/letsencrypt/options-ssl-nginx.conf;.
+You can use grep to find these lines:
+
+    ```bash
+    grep -r "letsencrypt" /etc/nginx/
+    ```
+
+    Edit the files to remove the Let's Encrypt configuration. For example:
+
+    ```bash
+    sudo nano /etc/nginx/sites-available/default
+    sudo nano /etc/nginx/conf.d/example.conf  
+    ```
+
+4. **Test NGINX Configuration:** After removing the Let's Encrypt configuration, test the NGINX configuration to ensure there are no syntax errors.
+
+    ```bash
+    sudo nginx -t
+    ```
+
+5. **Start NGINX:** If the configuration test is successful, start the NGINX service.
 
     ```bash
     sudo systemctl start nginx
